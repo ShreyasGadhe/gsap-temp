@@ -1,7 +1,10 @@
 import React from "react";
 import gsap from "gsap";
 import { useGSAP } from "@gsap/react";
+import { ScrollTrigger } from "gsap/all";
 import { SplitText } from "gsap/all";
+
+gsap.registerPlugin(ScrollTrigger);
 
 const Hero = () => {
   useGSAP(() => {
@@ -24,7 +27,20 @@ const Hero = () => {
       duration: 1,
       ease: "expo-out",
       stagger: 0.05,
+      delay: 1,
     });
+
+    gsap
+      .timeline({
+        scrollTrigger: {
+          trigger: "#hero",
+          start: "top top",
+          end: "bottom top",
+          scrub: 5,
+        },
+      })
+      .to(".right-leaf", { y: 200 }, 0)
+      .to(".left-leaf", { y: -200 }, 0);
   }, []);
   return (
     <>
@@ -44,12 +60,12 @@ const Hero = () => {
         <div className="body">
           <div className="content">
             <div className="space-y-5 hidden md:block">
-              <p>cool. Crisp. Classic.</p>
+              <p>Cool. Crisp. Classic.</p>
               <p className="subtitle">
                 Sip the Spirit <br /> of Summer
               </p>
             </div>
-            <div className="view-cocktails">
+            <div className="view-cocktails w-[50vw] h-50 lg:w-full">
               <p className="subtitle">
                 Every cocktail on our menu is a blend of premium ingredients,
                 creative flair, and timeless recipes - designed to delight your
