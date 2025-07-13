@@ -53,7 +53,7 @@ const Hero = () => {
         trigger: videoRef.current,
         start: startValue,
         end: endValue,
-        scrub: true,
+        scrub: 5,
         pin: true,
       },
     });
@@ -104,7 +104,7 @@ const Hero = () => {
       <div className="video absolute inset-8">
         <video
           ref={videoRef}
-          src="/videos/input.mp4"
+          src="/videos/output.mp4"
           muted
           playsInline
           preload="auto"
