@@ -5,11 +5,12 @@ import { ScrollTrigger } from "gsap/all";
 import { SplitText } from "gsap/all";
 import { useMediaQuery } from "react-responsive";
 
-gsap.registerPlugin(ScrollTrigger);
+ggsap.registerPlugin(ScrollTrigger, SplitText);
 
 const Hero = () => {
   const videoRef = useRef();
   const isMobile = useMediaQuery({ maxWidth: 767 });
+
   useGSAP(() => {
     const heroSplit = new SplitText(".title", { type: "chars, words" });
     const paragraphSplit = new SplitText(".subtitle", { type: "lines" });
@@ -20,7 +21,7 @@ const Hero = () => {
       yPercent: 100,
       duration: 1,
       opacity: 0,
-      ease: "expo-out",
+      ease: "expo.out",
       stagger: 0.05,
     });
 
@@ -28,11 +29,12 @@ const Hero = () => {
       opacity: 0,
       yPercent: 100,
       duration: 1,
-      ease: "expo-out",
+      ease: "expo.out",
       stagger: 0.05,
       delay: 1,
     });
 
+    // Leaves animation
     gsap
       .timeline({
         scrollTrigger: {
@@ -45,8 +47,9 @@ const Hero = () => {
       .to(".right-leaf", { y: 200 }, 0)
       .to(".left-leaf", { y: -200 }, 0);
 
-    const startValue = isMobile ? "top 50%" : "center 60%";
-    const endValue = isMobile ? "120%+=1000 top" : "bottom top";
+    // Scroll-triggered video
+    const startValue = isMobile ? "top center" : "center center";
+    const endValue = "bottom top";
 
     const tl = gsap.timeline({
       scrollTrigger: {
@@ -58,13 +61,33 @@ const Hero = () => {
         anticipatePin: 1,
       },
     });
-    videoRef.current.onloadedmetadata = () => {
-      tl.to(videoRef.current, {
-        currentTime: videoRef.current.duration,
+
+    // Ensure video metadata is loaded before animating
+    const video = videoRef.current;
+
+    const playScrollVideo = () => {
+      if (!video) return;
+      tl.to(video, {
+        currentTime: video.duration || 3, // fallback to 3 seconds if metadata not ready
+        ease: "none",
       });
+      ScrollTrigger.refresh();
     };
 
-    // scrollTrigger.refresh();
+    if (video.readyState >= 1) {
+      playScrollVideo();
+    } else {
+      video.addEventListener("loadedmetadata", playScrollVideo);
+    }
+
+    // Scroll restoration fix (optional)
+    ScrollTrigger.addEventListener("refreshInit", () => window.scrollTo(0, 0));
+    ScrollTrigger.refresh();
+
+    return () => {
+      video?.removeEventListener("loadedmetadata", playScrollVideo);
+      ScrollTrigger.kill();
+    };
   }, []);
   return (
     <>
@@ -116,6 +139,7 @@ const Hero = () => {
           muted
           playsInline
           preload="auto"
+          style={{ width: "100%", height: "auto", display: "block" }}
         ></video>
       </div>
     </>
