@@ -39,22 +39,23 @@ const Hero = () => {
           trigger: "#hero",
           start: "top top",
           end: "bottom top",
-          scrub: 5,
+          scrub: 0.1,
         },
       })
       .to(".right-leaf", { y: 200 }, 0)
       .to(".left-leaf", { y: -200 }, 0);
 
     const startValue = isMobile ? "top 50%" : "center 60%";
-    const endValue = isMobile ? "120% top" : "bottom top";
+    const endValue = isMobile ? "120%+=1000 top" : "bottom top";
 
     const tl = gsap.timeline({
       scrollTrigger: {
         trigger: videoRef.current,
         start: startValue,
         end: endValue,
-        scrub: 5,
+        scrub: 0.1,
         pin: true,
+        anticipatePin: 1,
       },
     });
     videoRef.current.onloadedmetadata = () => {
@@ -62,11 +63,13 @@ const Hero = () => {
         currentTime: videoRef.current.duration,
       });
     };
+
+    // scrollTrigger.refresh();
   }, []);
   return (
     <>
       <section id="hero" className="noisy">
-        <h1 className="title">Mojito</h1>
+        <h1 className="title">VELVET</h1>
         <img
           src="/images/hero-left-leaf.png"
           alt="left-leaf"
@@ -81,7 +84,7 @@ const Hero = () => {
         <div className="body">
           <div className="content">
             <div className="">
-              <div className="gradient-border space-y-5 hidden p-6 md:block shadow-lg bg-linear-60 from-white/30 to-white/0">
+              <div className="gradient-border space-y-5 hidden p-6 md:block shadow-lg bg-linear-60 from-white/10 to-white/0">
                 <p text-white text-sm>
                   Cool. Crisp. Classic.
                 </p>
@@ -96,7 +99,12 @@ const Hero = () => {
                 creative flair, and timeless recipes - designed to delight your
                 senses.
               </p>
-              <a href="#cocktails">View cocktails</a>
+              <a
+                href="#cocktails"
+                className="fixed bottom-0 right-5  p-2 rounded-lg backdrop-blur-[10px] border-white/20 border-[2px]  md:static"
+              >
+                View cocktails &rarr;
+              </a>
             </div>
           </div>
         </div>

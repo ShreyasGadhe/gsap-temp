@@ -23,6 +23,7 @@ body {
   color: white;
   scroll-behavior: smooth;
   overflow-x: hidden;
+  overscroll-behavior: none;
 }
 
 .gradient-border {
