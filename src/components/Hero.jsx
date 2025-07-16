@@ -58,25 +58,62 @@ const Hero = () => {
     const startValue = isMobile ? "top 50%" : "center 60%";
     const endValue = isMobile ? "120%+=1000 top" : "bottom top";
 
-    const tl = gsap.timeline({
-      scale: 1.1,
-      scrollTrigger: {
-        trigger: videoRef.current,
-        start: startValue,
-        end: endValue,
-        scrub: 0.1,
-        pin: true,
-        anticipatePin: 1,
-        refreshPriority: 0,
-        invalidateOnRefresh: true,
-      },
-    });
-    videoRef.current.onloadedmetadata = () => {
-      tl.to(videoRef.current, {
-        currentTime: videoRef.current.duration,
+    // Fixed video animation setup
+    const setupVideoAnimation = () => {
+      if (!videoRef.current) return;
+
+      const video = videoRef.current;
+
+      // Create the timeline with proper properties
+      const tl = gsap.timeline({
+        scrollTrigger: {
+          trigger: video,
+          start: startValue,
+          end: endValue,
+          scrub: 0.1,
+          pin: true,
+          anticipatePin: 1,
+          refreshPriority: 0,
+          invalidateOnRefresh: true,
+          onUpdate: (self) => {
+            // Update video currentTime based on scroll progress
+            if (video.duration) {
+              video.currentTime = self.progress * video.duration;
+            }
+          },
+          onToggle: (self) => {
+            // Pause video when not in view
+            if (self.isActive) {
+              video.pause();
+            }
+          },
+        },
       });
+
+      // Add scale animation to timeline
+      tl.to(video, {
+        scale: 1.1,
+        ease: "none",
+      });
+
+      return tl;
+    };
+
+    // Wait for video metadata to load
+    const handleVideoLoad = () => {
+      setupVideoAnimation();
       ScrollTrigger.refresh();
     };
+
+    if (videoRef.current) {
+      if (videoRef.current.readyState >= 1) {
+        // Video metadata already loaded
+        setupVideoAnimation();
+      } else {
+        // Wait for metadata to load
+        videoRef.current.addEventListener("loadedmetadata", handleVideoLoad);
+      }
+    }
 
     const handleResize = () => {
       ScrollTrigger.refresh();
@@ -87,6 +124,17 @@ const Hero = () => {
         ScrollTrigger.refresh();
       }, 500);
     };
+
+    // iOS-specific handling
+    const isIOS = /iPad|iPhone|iPod/.test(navigator.userAgent);
+    if (isIOS) {
+      const handleIOSResize = () => {
+        setTimeout(() => {
+          ScrollTrigger.refresh();
+        }, 150);
+      };
+      window.addEventListener("resize", handleIOSResize);
+    }
 
     window.addEventListener("resize", handleResize);
     window.addEventListener("orientationchange", handleOrientationChange);
@@ -102,6 +150,10 @@ const Hero = () => {
     return () => {
       window.removeEventListener("resize", handleResize);
       window.removeEventListener("orientationchange", handleOrientationChange);
+
+      if (videoRef.current) {
+        videoRef.current.removeEventListener("loadedmetadata", handleVideoLoad);
+      }
     };
   }, []);
   return (
