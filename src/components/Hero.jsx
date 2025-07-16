@@ -7,6 +7,16 @@ import { useMediaQuery } from "react-responsive";
 
 gsap.registerPlugin(ScrollTrigger);
 
+ScrollTrigger.config({
+  autoRefreshEvents: "visibilitychange, DOMContentLoaded, load",
+});
+
+ScrollTrigger.defaults({
+  scroller: window,
+  toggleActions: "play none none reverse",
+  refreshPriority: 0,
+});
+
 const Hero = () => {
   const videoRef = useRef();
   const isMobile = useMediaQuery({ maxWidth: 767 });
@@ -45,10 +55,11 @@ const Hero = () => {
       .to(".right-leaf", { y: 200 }, 0)
       .to(".left-leaf", { y: -200 }, 0);
 
-    const startValue = isMobile ? "top center" : "center center";
+    const startValue = isMobile ? "top 50%" : "center 60%";
     const endValue = isMobile ? "120%+=1000 top" : "bottom top";
 
     const tl = gsap.timeline({
+      scale: 1.1,
       scrollTrigger: {
         trigger: videoRef.current,
         start: startValue,
@@ -56,6 +67,8 @@ const Hero = () => {
         scrub: 0.1,
         pin: true,
         anticipatePin: 1,
+        refreshPriority: 0,
+        invalidateOnRefresh: true,
       },
     });
     videoRef.current.onloadedmetadata = () => {
@@ -65,7 +78,31 @@ const Hero = () => {
       ScrollTrigger.refresh();
     };
 
-    //
+    const handleResize = () => {
+      ScrollTrigger.refresh();
+    };
+
+    const handleOrientationChange = () => {
+      setTimeout(() => {
+        ScrollTrigger.refresh();
+      }, 500);
+    };
+
+    window.addEventListener("resize", handleResize);
+    window.addEventListener("orientationchange", handleOrientationChange);
+
+    console.log("ScrollTrigger instances:", ScrollTrigger.getAll());
+    ScrollTrigger.addEventListener("scrollStart", () =>
+      console.log("scroll start")
+    );
+    ScrollTrigger.addEventListener("scrollEnd", () =>
+      console.log("scroll end")
+    );
+
+    return () => {
+      window.removeEventListener("resize", handleResize);
+      window.removeEventListener("orientationchange", handleOrientationChange);
+    };
   }, []);
   return (
     <>
