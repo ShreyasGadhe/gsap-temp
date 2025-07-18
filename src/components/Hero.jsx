@@ -12,6 +12,10 @@ const TOTAL_FRAMES = 200;
 const framePath = (index) =>
   `/frames/ezgif-frame-${index.toString().padStart(3, "0")}.jpg`;
 
+ScrollTrigger.config({
+  autoRefreshEvents: "visibilitychange,DOMContentLoaded,load",
+});
+
 const Hero = () => {
   const scrollSectionRef = useRef();
   const isMobile = useMediaQuery({ maxWidth: 767 });
@@ -62,6 +66,8 @@ const Hero = () => {
       scrub: 1,
       pin: true,
       anticipatePin: 1,
+      refreshPriority: 0,
+      invalidateOnRefresh: true,
       onUpdate: (self) => {
         const frameIndex = Math.floor(self.progress * (TOTAL_FRAMES - 1)) + 1;
         setCurrentFrame(frameIndex);
