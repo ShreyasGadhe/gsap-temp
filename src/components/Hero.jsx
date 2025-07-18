@@ -1,26 +1,23 @@
-import React, { useRef } from "react";
+import React, { useRef, useEffect, useState } from "react";
 import gsap from "gsap";
 import { useGSAP } from "@gsap/react";
 import { ScrollTrigger } from "gsap/all";
 import { SplitText } from "gsap/all";
 import { useMediaQuery } from "react-responsive";
 
-gsap.registerPlugin(ScrollTrigger);
+gsap.registerPlugin(ScrollTrigger, SplitText);
 
-ScrollTrigger.config({
-  autoRefreshEvents: "visibilitychange, DOMContentLoaded, load",
-});
+const TOTAL_FRAMES = 200;
 
-ScrollTrigger.defaults({
-  scroller: window,
-  toggleActions: "play none none reverse",
-  refreshPriority: 0,
-});
+const framePath = (index) =>
+  `/frames/ezgif-frame-${index.toString().padStart(3, "0")}.jpg`;
 
 const Hero = () => {
-  const videoRef = useRef();
+  const scrollSectionRef = useRef();
   const isMobile = useMediaQuery({ maxWidth: 767 });
+  const [currentFrame, setCurrentFrame] = useState(1);
   useGSAP(() => {
+    //this is the text animation code
     const heroSplit = new SplitText(".title", { type: "chars, words" });
     const paragraphSplit = new SplitText(".subtitle", { type: "lines" });
 
@@ -43,6 +40,7 @@ const Hero = () => {
       delay: 1,
     });
 
+    //this is the leaf animation code
     gsap
       .timeline({
         scrollTrigger: {
@@ -55,9 +53,9 @@ const Hero = () => {
       .to(".right-leaf", { y: 200 }, 0)
       .to(".left-leaf", { y: -200 }, 0);
 
-    const startValue = isMobile ? "top 50%" : "center 60%";
-    const endValue = isMobile ? "120%+=1000 top" : "bottom top";
+    //this is the image sequence scrolltrigger code
 
+<<<<<<< HEAD
     // Fixed video animation setup
     const setupVideoAnimation = () => {
       if (!videoRef.current) return;
@@ -155,6 +153,30 @@ const Hero = () => {
         videoRef.current.removeEventListener("loadedmetadata", handleVideoLoad);
       }
     };
+=======
+    ScrollTrigger.create({
+      trigger: scrollSectionRef.current,
+      start: "top top",
+      end: "bottom  bottom",
+      scrub: 1,
+      pin: true,
+      anticipatePin: 1,
+      onUpdate: (self) => {
+        const frameIndex = Math.floor(self.progress * (TOTAL_FRAMES - 1)) + 1;
+        setCurrentFrame(frameIndex);
+      },
+    });
+
+    ScrollTrigger.refresh();
+  }, []);
+
+  //preloading frames here
+  useEffect(() => {
+    for (let i = 1; i <= TOTAL_FRAMES; i++) {
+      const img = new Image();
+      img.src = framePath(i);
+    }
+>>>>>>> 8a505e6 (converted to frame sequence)
   }, []);
   return (
     <>
@@ -200,13 +222,14 @@ const Hero = () => {
         </div>
       </section>
       <div className="video absolute inset-8">
-        <video
-          ref={videoRef}
-          src="/videos/output.mp4"
-          muted
-          playsInline
-          preload="auto"
-        ></video>
+        <div ref={scrollSectionRef} className="h-full relative w-full bg-black">
+          <img
+            src={framePath(currentFrame)}
+            alt={`frame ${currentFrame}`}
+            className="absolute top-0 left-0 w-full h-full object-cover"
+            loading="lazy"
+          />
+        </div>
       </div>
     </>
   );
