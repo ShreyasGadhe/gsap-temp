@@ -57,10 +57,10 @@ const Hero = () => {
 
     ScrollTrigger.create({
       trigger: scrollSectionRef.current,
-      start: "top top",
-      end: "bottom+=1000 bottom",
+      start: isMobile ? "top+=50 top" : "top top",
+      end: isMobile ? "+=1500" : "+=2000",
       scrub: 1,
-
+      pin: true,
       anticipatePin: 1,
       onUpdate: (self) => {
         const frameIndex = Math.floor(self.progress * (TOTAL_FRAMES - 1)) + 1;
@@ -68,8 +68,10 @@ const Hero = () => {
       },
     });
 
-    ScrollTrigger.refresh();
-  }, []);
+    setTimeout(() => {
+      ScrollTrigger.refresh();
+    }, 100);
+  }, [isMobile]);
 
   //preloading frames here
   useEffect(() => {
