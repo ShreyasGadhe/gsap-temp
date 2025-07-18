@@ -159,9 +159,6 @@ const Hero = () => {
     return () => {
       window.removeEventListener("resize", handleResize);
       window.removeEventListener("orientationchange", handleOrientationChange);
-      if (isIOS) {
-        window.removeEventListener("resize", handleIOSResize);
-      }
     };
   }, [isMobile, framesLoaded]); // Added framesLoaded to dependencies
 
