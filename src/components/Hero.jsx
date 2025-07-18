@@ -60,7 +60,7 @@ const Hero = () => {
       start: "top top",
       end: "bottom+=1000 bottom",
       scrub: 1,
-      pin: true,
+
       anticipatePin: 1,
       onUpdate: (self) => {
         const frameIndex = Math.floor(self.progress * (TOTAL_FRAMES - 1)) + 1;
