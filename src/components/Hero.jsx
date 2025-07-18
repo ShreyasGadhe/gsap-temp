@@ -20,8 +20,53 @@ const Hero = () => {
   const scrollSectionRef = useRef();
   const isMobile = useMediaQuery({ maxWidth: 767 });
   const [currentFrame, setCurrentFrame] = useState(1);
+  const [framesLoaded, setFramesLoaded] = useState(false);
+
+  // Preload frames
+  useEffect(() => {
+    let loadedCount = 0;
+    const totalFrames = TOTAL_FRAMES;
+
+    const loadFrame = (index) => {
+      return new Promise((resolve) => {
+        const img = new Image();
+        img.onload = () => {
+          loadedCount++;
+          if (loadedCount === totalFrames) {
+            setFramesLoaded(true);
+          }
+          resolve();
+        };
+        img.onerror = () => {
+          loadedCount++;
+          if (loadedCount === totalFrames) {
+            setFramesLoaded(true);
+          }
+          resolve();
+        };
+        img.src = framePath(index);
+      });
+    };
+
+    // Load all frames
+    Promise.all(
+      Array.from({ length: totalFrames }, (_, i) => loadFrame(i + 1))
+    ).then(() => {
+      console.log("All frames loaded");
+    });
+  }, []);
+
   useGSAP(() => {
-    //this is the text animation code
+    console.log("useGSAP running, isMobile:", isMobile);
+    console.log("ScrollTrigger available:", !!ScrollTrigger);
+
+    // Wait for frames to load before setting up ScrollTrigger
+    if (!framesLoaded) {
+      console.log("Frames not loaded yet, skipping ScrollTrigger setup");
+      return;
+    }
+
+    // Text animations
     const heroSplit = new SplitText(".title", { type: "chars, words" });
     const paragraphSplit = new SplitText(".subtitle", { type: "lines" });
 
@@ -44,7 +89,7 @@ const Hero = () => {
       delay: 1,
     });
 
-    //this is the leaf animation code
+    // Leaf animations
     gsap
       .timeline({
         scrollTrigger: {
@@ -57,35 +102,69 @@ const Hero = () => {
       .to(".right-leaf", { y: 200 }, 0)
       .to(".left-leaf", { y: -200 }, 0);
 
-    //this is the image sequence scrolltrigger code
-
-    ScrollTrigger.create({
-      trigger: scrollSectionRef.current,
-      start: isMobile ? "top+=50 top" : "top top",
-      end: isMobile ? "+=1500" : "+=2000",
-      scrub: 1,
-      pin: true,
-      anticipatePin: 1,
-      refreshPriority: 0,
-      invalidateOnRefresh: true,
-      onUpdate: (self) => {
-        const frameIndex = Math.floor(self.progress * (TOTAL_FRAMES - 1)) + 1;
-        setCurrentFrame(frameIndex);
-      },
-    });
-
-    setTimeout(() => {
-      ScrollTrigger.refresh();
-    }, 100);
-  }, [isMobile]);
-
-  //preloading frames here
-  useEffect(() => {
-    for (let i = 1; i <= TOTAL_FRAMES; i++) {
-      const img = new Image();
-      img.src = framePath(i);
+    // Image sequence animation
+    if (scrollSectionRef.current) {
+      ScrollTrigger.create({
+        trigger: scrollSectionRef.current,
+        start: isMobile ? "top+=50 top" : "top top",
+        end: isMobile ? "+=1500" : "+=2000",
+        scrub: 1,
+        pin: true,
+        anticipatePin: 1,
+        refreshPriority: 0,
+        invalidateOnRefresh: true,
+        onUpdate: (self) => {
+          const frameIndex = Math.floor(self.progress * (TOTAL_FRAMES - 1)) + 1;
+          setCurrentFrame(frameIndex);
+        },
+        onEnter: () => console.log("Image sequence ScrollTrigger entered"),
+        onLeave: () => console.log("Image sequence ScrollTrigger left"),
+      });
     }
-  }, []);
+
+    // Mobile-specific event handlers
+    const handleResize = () => {
+      ScrollTrigger.refresh();
+    };
+
+    const handleOrientationChange = () => {
+      setTimeout(() => {
+        ScrollTrigger.refresh();
+      }, 500);
+    };
+
+    // iOS-specific handling
+    const isIOS = /iPad|iPhone|iPod/.test(navigator.userAgent);
+    if (isIOS) {
+      const handleIOSResize = () => {
+        setTimeout(() => {
+          ScrollTrigger.refresh();
+        }, 150);
+      };
+      window.addEventListener("resize", handleIOSResize);
+    }
+
+    window.addEventListener("resize", handleResize);
+    window.addEventListener("orientationchange", handleOrientationChange);
+
+    // Debug info
+    setTimeout(() => {
+      console.log("ScrollTrigger instances:", ScrollTrigger.getAll());
+      ScrollTrigger.getAll().forEach((st, i) => {
+        console.log(`ScrollTrigger ${i}:`, st.vars.trigger);
+      });
+    }, 1000);
+
+    // Cleanup
+    return () => {
+      window.removeEventListener("resize", handleResize);
+      window.removeEventListener("orientationchange", handleOrientationChange);
+      if (isIOS) {
+        window.removeEventListener("resize", handleIOSResize);
+      }
+    };
+  }, [isMobile, framesLoaded]); // Added framesLoaded to dependencies
+
   return (
     <>
       <section id="hero" className="noisy">
@@ -132,14 +211,29 @@ const Hero = () => {
 
       <div
         ref={scrollSectionRef}
-        className="w-full md:h-[80%] h-1/2 absolute bottom-0 left-0 md:object-contain object-bottom object-cover;"
+        className="w-full md:h-[80%] h-1/2 absolute bottom-0 left-0 md:object-contain object-bottom object-cover"
+        style={{
+          // Add these styles to prevent touch issues
+          touchAction: "none",
+          userSelect: "none",
+          WebkitUserSelect: "none",
+        }}
       >
-        <img
-          src={framePath(currentFrame)}
-          alt={`frame ${currentFrame}`}
-          className="absolute top-0 left-0 w-full h-full object-cover"
-          loading="lazy"
-        />
+        {framesLoaded ? (
+          <img
+            src={framePath(currentFrame)}
+            alt={`frame ${currentFrame}`}
+            className="absolute top-0 left-0 w-full h-full object-cover"
+            style={{
+              pointerEvents: "none",
+              touchAction: "none",
+            }}
+          />
+        ) : (
+          <div className="absolute top-0 left-0 w-full h-full flex items-center justify-center bg-black/20">
+            <p className="text-white">Loading frames...</p>
+          </div>
+        )}
       </div>
     </>
   );
