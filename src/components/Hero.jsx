@@ -58,7 +58,7 @@ const Hero = () => {
     ScrollTrigger.create({
       trigger: scrollSectionRef.current,
       start: "top top",
-      end: "bottom  bottom",
+      end: "bottom+=1000 bottom",
       scrub: 1,
       pin: true,
       anticipatePin: 1,
@@ -121,15 +121,17 @@ const Hero = () => {
           </div>
         </div>
       </section>
-      <div className="video absolute inset-8">
-        <div ref={scrollSectionRef} className="h-full relative w-full bg-black">
-          <img
-            src={framePath(currentFrame)}
-            alt={`frame ${currentFrame}`}
-            className="absolute top-0 left-0 w-full h-full object-cover"
-            loading="lazy"
-          />
-        </div>
+
+      <div
+        ref={scrollSectionRef}
+        className="w-full md:h-[80%] h-1/2 absolute bottom-0 left-0 md:object-contain object-bottom object-cover;"
+      >
+        <img
+          src={framePath(currentFrame)}
+          alt={`frame ${currentFrame}`}
+          className="absolute top-0 left-0 w-full h-full object-cover"
+          loading="lazy"
+        />
       </div>
     </>
   );
