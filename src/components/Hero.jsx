@@ -14,6 +14,7 @@ const framePath = (index) =>
 
 ScrollTrigger.config({
   autoRefreshEvents: "visibilitychange,DOMContentLoaded,load",
+  ignoreMobileResize: true,
 });
 
 const Hero = () => {
@@ -96,7 +97,7 @@ const Hero = () => {
           trigger: "#hero",
           start: "top top",
           end: "bottom top",
-          scrub: 0.1,
+          scrub: true,
         },
       })
       .to(".right-leaf", { y: 200 }, 0)
@@ -208,7 +209,7 @@ const Hero = () => {
 
       <div
         ref={scrollSectionRef}
-        className="w-full md:h-[80%] h-1/2 absolute bottom-0 left-0 md:object-contain object-bottom object-cover"
+        className="w-full md:h-[80%] h-1/2 absolute bottom-0 left-0 md:object-contain object-bottom object-cover sequence"
         style={{
           // Add these styles to prevent touch issues
           touchAction: "none",

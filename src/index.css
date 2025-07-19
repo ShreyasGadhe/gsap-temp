@@ -26,11 +26,11 @@ body {
   background-color: black;
   color: white;
   scroll-behavior: smooth;
-  overflow-x: hidden;
+  /* overflow-x: hidden; */
   overscroll-behavior: none;
 }
 
-.video video {
+.sequence {
   touch-action: none;
   -webkit-touch-callout: none;
   -webkit-user-select: none;
